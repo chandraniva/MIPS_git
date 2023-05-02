@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from numba import jit
 from datetime import datetime
+import matplotlib.animation as animation
 
 startTime = datetime.now()
 
@@ -134,8 +135,8 @@ def viz_ising(s,t):
     ax1 = fig.add_subplot(1,1,1, aspect=1)
     ax1.imshow(s,cmap='binary')
     
-    ax1.set_xlim(0,Lx)
-    ax1.set_ylim(0,Ly)
+    # ax1.set_xlim(0,Lx)
+    # ax1.set_ylim(0,Ly)
     plt.title('time='+str(t))
     plt.show()
     
@@ -146,7 +147,7 @@ N = int(rho*Lx*Ly)
 sqL = Lx*Ly
 temp = 0.5
 beta = 1/temp
-time = int(1e6) + 2
+time = int(1e6) + 1
 q = 0.1
 
 for k in range(sqL):
@@ -158,15 +159,47 @@ s = init_ising(N,sqL)
 
 print("done...")
     
+
+fps = 20
+arr = []
+
 op = np.zeros(time)
+
 for t in range(time):
-    if t == 10 or t == 100 or t == 1000 or t == 10000 or t == 100000 or t == int(1e6):
-    # if t>0 and t%1==0:
-        viz_ising(s,t)
+    ss = s.copy()
+    arr.append(ss.reshape((Ly,Lx))) 
+    # if t == 10 or t == 100 or t == 1000 or t == 10000 or t == 100000 or t == int(1e6):
+    #     viz_ising(s,t)
+    
     op[t] = ordr_param(s)
     s = update_ising(s,beta)
     
 plt.plot(op)
+
+# First set up the figure, the axis, and the plot element we want to animate
+
+fig = plt.figure(figsize = (10,10))
+ax1 = fig.add_subplot(1,1,1, aspect=1)
+ax1.imshow(ss.reshape(Ly,Lx),cmap='binary')
+time_text = ax1.text(0.4, 1.05, '', transform=ax1.transAxes, 
+                      fontsize=12, bbox=dict(facecolor='white', alpha=0.75))
+
+a = arr[0]
+im = plt.imshow(a, cmap='binary')
+
+def animate_func(i):
+    if i % fps == 0:
+        print( '.', end ='' )
+
+    im.set_array(arr[i])
+    time_text.set_text(f'Time: {i:n}')
+    return [im]
+
+anim = animation.FuncAnimation(fig, animate_func, frames = time, 
+                                interval = 1000 / fps)
+
+anim.save('is_lx='+str(Lx)+'_ly='+str(Ly)+'_T='+str(temp)+'_time='+str(time)+
+          '.mp4', fps=fps)
 
 
 print("Execution time:",datetime.now() - startTime)
