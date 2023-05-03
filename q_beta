@@ -194,8 +194,8 @@ for tm in temp:
     i += 1
     
     
-# np.save('q='+str(q)+'_lx='+str(Lx)+'_ly='+str(Ly)+'_T='+str(temp)+
-#         '.npy',np.vstack(temp,op1,op2,op4))    
+np.save('q='+str(q)+'_lx='+str(Lx)+'_ly='+str(Ly)+'_T='+str(temp)+
+        '.npy',np.vstack(temp,op1,op2,op4))    
     
     
 print("Execution time:",datetime.now() - startTime)
