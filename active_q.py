@@ -167,6 +167,7 @@ for t in range(time):
     s = update_ising(s,beta)
     
 plt.plot(op)
-
+plt.ylim(0,1)
+plt.show()
 
 print("Execution time:",datetime.now() - startTime)

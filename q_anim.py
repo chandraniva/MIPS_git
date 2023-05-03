@@ -129,6 +129,7 @@ def viz(s,t):
     
     
 def viz_ising(s,t):
+    s[np.where(s>0)]=1
     s = s.reshape(Ly,Lx)
     fig = plt.figure()
     fig = plt.figure(figsize = (10,10))
@@ -140,6 +141,7 @@ def viz_ising(s,t):
     plt.title('time='+str(t))
     plt.show()
     
+# @jit
 def pos_vel(s,Lx,Ly):
     s = s.reshape(Ly,Lx)
     xs, ys = np.where(s>0)[0], np.where(s>0)[1]
@@ -168,14 +170,14 @@ N = int(rho*Lx*Ly)
 sqL = Lx*Ly
 temp = 0.5
 beta = 1/temp
-time = int(1e4) + 1
-q = 0.1
+time = int(1e6) + 1
+q = 0.05
 
 for k in range(sqL):
     nbr=nbr2d(k,Lx,Ly)
 nbr = nbr.astype('int16')
 
-s = init_dis(N,sqL)
+s = init_ord(N,sqL)
 # viz(s,0)
 
 print("done...")
@@ -188,44 +190,46 @@ op = np.zeros(time)
 
 for t in range(time):
     ss = s.copy()
-    arr.append(ss.reshape((Ly,Lx))) 
-    # if t == 10 or t == 100 or t == 1000 or t == 10000 or t == 100000 or t == int(1e6):
-    # viz(s,t)
+    # arr.append(ss.reshape((Ly,Lx))) 
+    if t == 10 or t == 100 or t == 1000 or t == 10000 or t == 100000 or t == int(1e6):
+        viz_ising(s,t)
     
     op[t] = ordr_param(s)
-    s = update_q(s,beta,q)
+    s = update_ising(s,beta)
     
 plt.plot(op)
+plt.ylim(0,1)
+plt.show()
 
-def animate_func(i):
-    global im,arr
-    if i % fps == 0:
-        print( '.', end ='' )
+# def animate_func(i):
+#     global im,arr
+#     if i % fps == 0:
+#         print( '.', end ='' )
     
-    xs,ys,vx,vy = pos_vel(arr[i],Lx,Ly)   
+#     xs,ys,vx,vy = pos_vel(arr[i],Lx,Ly)   
     
     
-    im.set_UVC(vx,vy)
-    im.set_offsets(np.array([ys,xs]).T)
+#     im.set_UVC(vx,vy)
+#     im.set_offsets(np.array([ys,xs]).T)
     
-    time_text.set_text(f'Time: {i:n}')
-    return im,
+#     time_text.set_text(f'Time: {i:n}')
+#     return im,
 
 
-fig, ax = plt.subplots(figsize=(8, 16))
-x,y,v1,v2 = pos_vel(arr[0],Lx,Ly)
+# fig, ax = plt.subplots(figsize=(8, 16))
+# x,y,v1,v2 = pos_vel(arr[0],Lx,Ly)
 
-im = plt.quiver(x,y,v1,v2,scale=Ly)
-ax.set_xlim(0, Lx)
-ax.set_ylim(0, Ly)
-time_text = ax.text(0.05, 0.95, '', transform=ax.transAxes, fontsize=12, 
-                    bbox=dict(facecolor='white', alpha=0.75))
-plt.tight_layout()
-anim = animation.FuncAnimation(fig, animate_func, frames = time, 
-                                interval = 1000 / fps)
+# im = plt.quiver(x,y,v1,v2,scale=Ly)
+# ax.set_xlim(0, Lx)
+# ax.set_ylim(0, Ly)
+# time_text = ax.text(0.05, 0.95, '', transform=ax.transAxes, fontsize=12, 
+#                     bbox=dict(facecolor='white', alpha=0.75))
+# plt.tight_layout()
+# anim = animation.FuncAnimation(fig, animate_func, frames = time, 
+#                                 interval = 1000 / fps)
 
-anim.save('q='+str(q)+'_lx='+str(Lx)+'_ly='+str(Ly)+'_T='+str(temp)+'_time='+
-          str(time)+'.mp4', fps=fps)
+# anim.save('q='+str(q)+'_lx='+str(Lx)+'_ly='+str(Ly)+'_T='+str(temp)+'_time='+
+#           str(time)+'.mp4', fps=fps)
 
 
 print("Execution time:",datetime.now() - startTime)
