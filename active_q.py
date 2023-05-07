@@ -116,10 +116,10 @@ def viz(s,t):
     fig = plt.figure()
     fig = plt.figure(figsize = (10,10))
     ax1 = fig.add_subplot(1,1,1, aspect=1)
-    ax1.quiver(p1[1],p1[0],np.ones(len(p1[0])),np.zeros(len(p1[1])),scale = Lx)
-    ax1.quiver(p2[1],p2[0],np.zeros(len(p2[0])),np.ones(len(p2[1])),scale = Lx)
-    ax1.quiver(p3[1],p3[0],-np.ones(len(p3[0])),np.zeros(len(p3[1])),scale = Lx)
-    ax1.quiver(p4[1],p4[0],np.zeros(len(p4[0])),-np.ones(len(p4[1])),scale=Lx)
+    ax1.quiver(p1[1],p1[0],np.ones(len(p1[0])),np.zeros(len(p1[1])),scale = Ly,color='g')
+    ax1.quiver(p2[1],p2[0],np.zeros(len(p2[0])),np.ones(len(p2[1])),scale = Ly,color='r')
+    ax1.quiver(p3[1],p3[0],-np.ones(len(p3[0])),np.zeros(len(p3[1])),scale = Ly,color='magenta')
+    ax1.quiver(p4[1],p4[0],np.zeros(len(p4[0])),-np.ones(len(p4[1])),scale=Ly,color='b')
     
     ax1.set_xlim(0,Lx)
     ax1.set_ylim(0,Ly)
@@ -140,20 +140,20 @@ def viz_ising(s,t):
     plt.show()
     
 
-Lx, Ly = 32, 64
+Lx, Ly = 16, 32
 rho = 1/2
 N = int(rho*Lx*Ly)
 sqL = Lx*Ly
-temp = 0.5
+temp = 0.3
 beta = 1/temp
 time = int(1e6) + 2
-q = 0.1
+q = 0.05
 
 for k in range(sqL):
     nbr=nbr2d(k,Lx,Ly)
 nbr = nbr.astype('int16')
 
-s = init_ising(N,sqL)
+s = init_dis(N,sqL)
 # viz(s,0)
 
 print("done...")
@@ -162,9 +162,9 @@ op = np.zeros(time)
 for t in range(time):
     if t == 10 or t == 100 or t == 1000 or t == 10000 or t == 100000 or t == int(1e6):
     # if t>0 and t%1==0:
-        viz_ising(s,t)
+        viz(s,t)
     op[t] = ordr_param(s)
-    s = update_ising(s,beta)
+    s = update_q(s,beta,q)
     
 plt.plot(op)
 plt.ylim(0,1)

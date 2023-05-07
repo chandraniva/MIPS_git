@@ -128,16 +128,16 @@ def viz(s,t):
     plt.show()
     
     
-def viz_ising(s,t):
+def viz_ising(s,t,desc):
+    s[np.where(s>0)[0]] = 1
     s = s.reshape(Ly,Lx)
     fig = plt.figure()
     fig = plt.figure(figsize = (10,10))
-    ax1 = fig.add_subplot(1,1,1, aspect=1)
+    ax1 = fig.add_subplot(1,1,1, aspect=2)
     ax1.imshow(s,cmap='binary')
-    
-    # ax1.set_xlim(0,Lx)
-    # ax1.set_ylim(0,Ly)
-    plt.title('time='+str(t))
+    plt.title(desc+'  time='+str(t))
+    # plt.savefig('is_lx='+str(Lx)+'_ly='+str(Ly)+'_T='+str(temp)+
+    #             '_time='+str(t)+'.png',dpi=500)
     plt.show()
     
 
@@ -145,61 +145,84 @@ Lx, Ly = 32, 64
 rho = 1/2
 N = int(rho*Lx*Ly)
 sqL = Lx*Ly
-temp = 0.5
+temp = 0.4
 beta = 1/temp
-time = int(1e6) + 1
+time = 501
 q = 0.1
 
 for k in range(sqL):
     nbr=nbr2d(k,Lx,Ly)
 nbr = nbr.astype('int16')
 
-s = init_ising(N,sqL)
-# viz(s,0)
-
-print("done...")
+si = init_ord(N,sqL)
+sq = init_ord(N,sqL)
     
 
 fps = 20
-arr = []
+arri = []
+arrq = []
 
 op = np.zeros(time)
+opq = np.zeros(time)
+
 
 for t in range(time):
-    ss = s.copy()
-    arr.append(ss.reshape((Ly,Lx))) 
-    # if t == 10 or t == 100 or t == 1000 or t == 10000 or t == 100000 or t == int(1e6):
-    #     viz_ising(s,t)
+    ssi = si.copy()
+    ssq = sq.copy()
+    ssq[np.where(ssq>0)] = 1
+    ssi[np.where(ssi>0)] = 1
+    arri.append(ssi.reshape((Ly,Lx))) 
+    arrq.append(ssq.reshape((Ly,Lx))) 
+    if t==1 or t == 10 or t == 100 or t == 1000 \
+        or t == 10000 or t == 20000 or t == 100000 or t == int(1e6):
+        viz_ising(si,t,"ising")
+        viz_ising(sq,t,"active")
     
-    op[t] = ordr_param(s)
-    s = update_ising(s,beta)
+    op[t] = ordr_param(si)
+    opq[t] = ordr_param(sq)
+    si = update_ising(si,beta)
+    sq = update_q(sq,beta,q)
     
+print("done...")
+
 plt.plot(op)
+plt.plot(opq)
+plt.ylim(0,0.5)
+plt.show()
 
-# First set up the figure, the axis, and the plot element we want to animate
+fig = plt.figure(figsize = (15,15))
+ax1 = fig.add_subplot(1,2,1, aspect=1)
+ax2 = fig.add_subplot(1,2,2, aspect=1)
+ax1.imshow(ssi.reshape(Ly,Lx),cmap='binary')
+ax2.imshow(ssq.reshape(Ly,Lx),cmap='binary')
+ax1.set_title("Passive Lattice gas",fontsize = 20)
+ax2.set_title("Motile lattice gas", fontsize = 20)
+time_text = ax1.text(1, 1.10, '', transform=ax1.transAxes, 
+                      fontsize=20, bbox=dict(facecolor='white', alpha=0.75))
 
-fig = plt.figure(figsize = (10,10))
-ax1 = fig.add_subplot(1,1,1, aspect=1)
-ax1.imshow(ss.reshape(Ly,Lx),cmap='binary')
-time_text = ax1.text(0.4, 1.05, '', transform=ax1.transAxes, 
-                      fontsize=12, bbox=dict(facecolor='white', alpha=0.75))
+a = arri[0]
+b = arrq[0]
+im1 = plt.imshow(a, cmap='binary')
+im2 = plt.imshow(b, cmap='binary')
 
-a = arr[0]
-im = plt.imshow(a, cmap='binary')
+
 
 def animate_func(i):
     if i % fps == 0:
         print( '.', end ='' )
 
-    im.set_array(arr[i])
+    im1.set_array(arri[i])    
+    im2.set_array(arrq[i])
+
     time_text.set_text(f'Time: {i:n}')
-    return [im]
+    return im1, im2
 
 anim = animation.FuncAnimation(fig, animate_func, frames = time, 
                                 interval = 1000 / fps)
+plt.close()
 
-anim.save('is_lx='+str(Lx)+'_ly='+str(Ly)+'_T='+str(temp)+'_time='+str(time)+
-          '.mp4', fps=fps)
+# anim.save('is_q_lx='+str(Lx)+'_ly='+str(Ly)+'_T='+str(temp)+'_time='+str(time)+
+#           '.mp4', fps=fps)
 
 
 print("Execution time:",datetime.now() - startTime)

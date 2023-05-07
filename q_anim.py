@@ -164,14 +164,14 @@ def pos_vel(s,Lx,Ly):
     return xs,ys,vx,vy
     
 
-Lx, Ly = 32, 64
+Lx, Ly = 16, 32
 rho = 1/2
 N = int(rho*Lx*Ly)
 sqL = Lx*Ly
-temp = 0.5
+temp = 0.7
 beta = 1/temp
-time = int(1e6) + 1
-q = 0.05
+time = int(1e4) + 1
+q = 0.1
 
 for k in range(sqL):
     nbr=nbr2d(k,Lx,Ly)
@@ -183,53 +183,68 @@ s = init_ord(N,sqL)
 print("done...")
     
 
-fps = 5
+fps = 20
 arr = []
 
 op = np.zeros(time)
 
 for t in range(time):
     ss = s.copy()
-    # arr.append(ss.reshape((Ly,Lx))) 
+    arr.append(ss.reshape((Ly,Lx))) 
     if t == 10 or t == 100 or t == 1000 or t == 10000 or t == 100000 or t == int(1e6):
-        viz_ising(s,t)
+        viz(s,t)
     
     op[t] = ordr_param(s)
-    s = update_ising(s,beta)
+    s = update_q(s,beta,q)
     
 plt.plot(op)
 plt.ylim(0,1)
 plt.show()
 
-# def animate_func(i):
-#     global im,arr
-#     if i % fps == 0:
-#         print( '.', end ='' )
+
+def animate_func(i):
+    global im,arr
+    if i % fps == 0:
+        print( '.', end ='' )
     
-#     xs,ys,vx,vy = pos_vel(arr[i],Lx,Ly)   
+    xs,ys,vx,vy = pos_vel(arr[i],Lx,Ly) 
+    C = np.zeros_like(vx)
+    C[np.where(vx == 1)[0]] = 1
+    C[np.where(vx == -1)[0]] = 3
+    C[np.where(vy == 1)[0]] = 2
+    C[np.where(vy == -1)[0]] = 4
     
     
-#     im.set_UVC(vx,vy)
-#     im.set_offsets(np.array([ys,xs]).T)
+    im.set_UVC(vx,vy,C)
+    im.set_offsets(np.array([ys,xs]).T)
     
-#     time_text.set_text(f'Time: {i:n}')
-#     return im,
+    time_text.set_text(f'Time: {i:n}')
+    return im,
 
 
-# fig, ax = plt.subplots(figsize=(8, 16))
-# x,y,v1,v2 = pos_vel(arr[0],Lx,Ly)
 
-# im = plt.quiver(x,y,v1,v2,scale=Ly)
-# ax.set_xlim(0, Lx)
-# ax.set_ylim(0, Ly)
-# time_text = ax.text(0.05, 0.95, '', transform=ax.transAxes, fontsize=12, 
-#                     bbox=dict(facecolor='white', alpha=0.75))
-# plt.tight_layout()
-# anim = animation.FuncAnimation(fig, animate_func, frames = time, 
-#                                 interval = 1000 / fps)
+fig, ax = plt.subplots(figsize=(8, 16))
+x,y,v1,v2 = pos_vel(arr[0],Lx,Ly)
+C = np.zeros_like(v1)
+C[np.where(v1 == 1)[0]] = 1
+C[np.where(v1 == -1)[0]] = 3
+C[np.where(v2 == 1)[0]] = 2
+C[np.where(v2 == -1)[0]] = 4
 
-# anim.save('q='+str(q)+'_lx='+str(Lx)+'_ly='+str(Ly)+'_T='+str(temp)+'_time='+
-#           str(time)+'.mp4', fps=fps)
+ax.grid(axis='both',linestyle='-',color='slategrey')
+im = plt.quiver(x,y,v1,v2,C,cmap='seismic',scale=Ly,width=0.01)
+ax.set_xlim(0, Lx)
+ax.set_ylim(0, Ly)
+ax.set_xticks(np.arange(0,Lx))
+ax.set_yticks(np.arange(0,Ly))
+time_text = ax.text(0.05, 0.95, '', transform=ax.transAxes, fontsize=12, 
+                    bbox=dict(facecolor='white', alpha=0.75))
+plt.tight_layout()
+anim = animation.FuncAnimation(fig, animate_func, frames = time, 
+                                interval = 1000 / fps)
+
+anim.save('q='+str(q)+'_lx='+str(Lx)+'_ly='+str(Ly)+'_T='+str(temp)+'_time='+
+          str(time)+'.mp4', fps=fps)
 
 
 print("Execution time:",datetime.now() - startTime)
