@@ -145,9 +145,9 @@ Lx, Ly = 32, 64
 rho = 1/2
 N = int(rho*Lx*Ly)
 sqL = Lx*Ly
-temp = 0.4
+temp = 0.5
 beta = 1/temp
-time = 501
+time = 101
 q = 0.1
 
 for k in range(sqL):
@@ -202,8 +202,8 @@ time_text = ax1.text(1, 1.10, '', transform=ax1.transAxes,
 
 a = arri[0]
 b = arrq[0]
-im1 = plt.imshow(a, cmap='binary')
-im2 = plt.imshow(b, cmap='binary')
+im1 = ax1.imshow(a, cmap='binary')
+im2 = ax2.imshow(b, cmap='binary')
 
 
 
@@ -215,14 +215,15 @@ def animate_func(i):
     im2.set_array(arrq[i])
 
     time_text.set_text(f'Time: {i:n}')
-    return im1, im2
+    return [im1, im2]
 
-anim = animation.FuncAnimation(fig, animate_func, frames = time, 
+anim = animation.FuncAnimation(fig, animate_func, frames = time, #blit = True, 
                                 interval = 1000 / fps)
-plt.close()
+# plt.tight_layout()
 
-# anim.save('is_q_lx='+str(Lx)+'_ly='+str(Ly)+'_T='+str(temp)+'_time='+str(time)+
-#           '.mp4', fps=fps)
+anim.save('is_q_lx='+str(Lx)+'_ly='+str(Ly)+'_T='+str(temp)+'_time='+str(time)+
+          '.mp4', fps=fps)
 
+plt.show()
 
 print("Execution time:",datetime.now() - startTime)
