@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from numba import jit
 from datetime import datetime
+from tqdm import tqdm
 
 startTime = datetime.now()
 
@@ -55,8 +56,7 @@ def ordr_param(s):
         for i in range(Lx):
             n+= int(s[j*Lx + i] > 0)
         mg+=np.abs(n/Lx-0.5)
-    return mg/Ly
-
+    return 2*mg/Ly
 
 @jit
 def H(s,i):
@@ -143,80 +143,51 @@ def update_q(s,beta,q):
                             s[j] = 0
             
     return s
-    
-# @jit
-def update_speck(s,wp,w1):
-    for r in range(sqL):
-        i= int(np.random.rand()*sqL)
-        if s[i]>0:
-            if np.random.rand()<0.5: #movement
-                if np.random.rand() < wp:
-                    dirn = s[i]
-                else:
-                    dirn = (np.random.randint(0,3) + s[i])%4 + 1
-                    
-                j = nbr[i,dirn]
-                s[j] = s[i]
-                s[i] = 0
-                
-            elif np.random.rand()<w1: #flip/tumble
-                s[i] = (2*np.random.randint(0,2) -2 + s[i])%4 + 1
-                
-    return s
                 
 
 
-
-Lx, Ly = 16, 32
+Lx, Ly = 32, 64
 rho = 1/2
 N = int(rho*Lx*Ly)
 sqL = Lx*Ly
-q = -1
+q=0.005
+beta = 0
 
 for k in range(sqL):
     nbr=nbr2d(k,Lx,Ly)
 nbr = nbr.astype('int16')
 print("done...")
 
-trlx = 1000000
-ens = 1000000
-temp = np.arange(0.4,0.91,0.1)
-op1 = np.zeros_like(temp)
-op2 = np.zeros_like(temp)
-op4 = np.zeros_like(temp)
 
 print('q='+str(q)+',lx='+str(Lx)+',ly='+str(Ly))
 
-i = 0
-for tm in temp:
-    
-    b = 1/tm
-    # s = init_ising(N,sqL)
-    s = init_dis(N,sqL)
-    
-    for t in range(trlx):
-        # s = update_ising(s,b)
-        s = update_q(s,b,q)
+time = 100000 #2*int(1e4)    
+ens = 10
+op_ord = np.zeros(time)
+op_dis = np.zeros(time)
+
+for e in tqdm(range(ens)):
+    s1 = init_dis(N,sqL)
+    s2 = init_ord(N,sqL)
+    for t in range(time):
+        op_dis[t] += ordr_param(s1)
+        op_ord[t] += ordr_param(s2)
+        s1 = update_q(s1,beta,q)
+        s2 = update_q(s2,beta,q)
         
-    for e in range(ens):
-        op = ordr_param(s)
-        op1[i] += op
-        op2[i] += op*op
-        op4[i] += op*op*op*op
-        s = update_q(s,b,q)
-        # s = update_ising(s,b)
+    np.save('q_time_'+str(time)+'_q'+str(q)+'_lx='+str(Lx)+'_ly='+str(Ly)+
+            '.npy',np.vstack((op_ord/(e+1),op_dis/(e+1))))   
         
-    op1[i] = op1[i]/ens
-    op2[i] = op2[i]/ens
-    op4[i] = op4[i]/ens
-    
-    print(tm,op1[i],op2[i],op4[i])
-    
-    i += 1
-    
-    
-np.save('q='+str(q)+'_lx='+str(Lx)+'_ly='+str(Ly)+'_T='+str(temp)+
-        '.npy',np.vstack(temp,op1,op2,op4))    
+op_dis = op_dis/ens
+op_ord = op_ord/ens
+
+np.save('q_time_'+str(time)+'_q'+str(q)+'_lx='+str(Lx)+'_ly='+str(Ly)+
+        '.npy',np.vstack((op_ord,op_dis)))    
+
+plt.plot(op_ord)
+plt.plot(op_dis)
+plt.ylim(0,1)
+plt.show()   
     
     
 print("Execution time:",datetime.now() - startTime)

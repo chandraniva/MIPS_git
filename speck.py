@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from numba import jit
 from datetime import datetime
+from tqdm import tqdm
 
 startTime = datetime.now()
 
@@ -55,7 +56,7 @@ def ordr_param(s):
         for i in range(Lx):
             n+= int(s[j*Lx + i] > 0)
         mg+=np.abs(n/Lx-0.5)
-    return mg/Ly
+    return 2*mg/Ly
 
 
 @jit
@@ -144,20 +145,21 @@ def update_q(s,beta,q):
             
     return s
     
-# @jit
-def update_speck(s,wp,w1):
+@jit
+def update_speck(s,wp1,w1):
     for r in range(sqL):
         i= int(np.random.rand()*sqL)
         if s[i]>0:
             if np.random.rand()<0.5: #movement
-                if np.random.rand() < wp:
+                if np.random.rand() < wp1:
                     dirn = s[i]
-                else:
-                    dirn = (np.random.randint(0,3) + s[i])%4 + 1
+                # else:
+                #     dirn = (np.random.randint(0,3) + s[i])%4 + 1
                     
-                j = nbr[i,dirn]
-                s[j] = s[i]
-                s[i] = 0
+                j = nbr[i,dirn-1]
+                if s[j]==0:
+                    s[j] = s[i]
+                    s[i] = 0
                 
             elif np.random.rand()<w1: #flip/tumble
                 s[i] = (2*np.random.randint(0,2) -2 + s[i])%4 + 1
@@ -165,58 +167,152 @@ def update_speck(s,wp,w1):
     return s
                 
 
+def viz(s,t):
+    s = s.reshape(Ly,Lx)
+    p1 = np.where(s == 1)
+    p2 = np.where(s == 2)
+    p3 = np.where(s == 3)
+    p4 = np.where(s == 4)
+    
+    fig = plt.figure()
+    fig = plt.figure(figsize = (10,10))
+    ax1 = fig.add_subplot(1,1,1, aspect=1)
+    ax1.quiver(p1[1],p1[0],np.ones(len(p1[0])),np.zeros(len(p1[1])),scale = Ly,color='g')
+    ax1.quiver(p2[1],p2[0],np.zeros(len(p2[0])),np.ones(len(p2[1])),scale = Ly,color='r')
+    ax1.quiver(p3[1],p3[0],-np.ones(len(p3[0])),np.zeros(len(p3[1])),scale = Ly,color='magenta')
+    ax1.quiver(p4[1],p4[0],np.zeros(len(p4[0])),-np.ones(len(p4[1])),scale=Ly,color='b')
+    
+    ax1.set_xlim(0,Lx)
+    ax1.set_ylim(0,Ly)
+    ax1.grid(axis='both',linestyle='-',color='slategrey')
+    ax1.set_xticks(np.arange(0,Lx))
+    ax1.set_yticks(np.arange(0,Ly))
+    plt.title('time='+str(t))
+    plt.show()
+    
+
+"==========================   visualization  ============================"
+
+    
+# Lx, Ly = 16, 32
+# rho = 1/2
+# N = int(rho*Lx*Ly)
+# sqL = Lx*Ly
+# s = init_ord(N,sqL)
+# wp1 = 5
+# wp = wp1/(3+wp1)
+# w1 = 0.1/(3+wp1)
 
 
-Lx, Ly = 16, 32
+# for k in range(sqL):
+#     nbr=nbr2d(k,Lx,Ly)
+# nbr = nbr.astype('int16')
+
+
+# time = 10000001
+
+# for t in range(time):
+#     if t == 10 or t == 100 or t == 1000 or t == 10000 or t == 100000 or t == int(1e6) or t == int(1e7):
+#         viz(s,t)
+    
+#     update_speck(s,wp,w1)
+
+
+
+
+
+
+"==========================  with control params  ============================"
+
+# Lx, Ly = 16, 32
+# rho = 1/2
+# N = int(rho*Lx*Ly)
+# sqL = Lx*Ly
+
+# for k in range(sqL):
+#     nbr=nbr2d(k,Lx,Ly)
+# nbr = nbr.astype('int16')
+
+# trlx = 1000000
+# ens = 10000000
+# wp = np.arange(4.5,5,0.1)
+
+
+# op1 = np.zeros_like(wp)
+# op2 = np.zeros_like(wp)
+# op4 = np.zeros_like(wp)
+
+
+# i = 0
+# for tm in wp:
+    
+#     wp1 = tm/(3+tm)
+#     w1 = 0.1/(3+tm)
+    
+#     s = init_dis(N,sqL)
+    
+#     for t in range(trlx):
+#         s = update_speck(s,wp1,w1)
+        
+#     for e in range(ens):
+#         op = ordr_param(s)
+#         op1[i] += op
+#         op2[i] += op*op
+#         op4[i] += op*op*op*op
+#         s = update_speck(s,wp1,w1)
+        
+#     op1[i] = op1[i]/ens
+#     op2[i] = op2[i]/ens
+#     op4[i] = op4[i]/ens
+    
+#     print(tm,op1[i],op2[i],op4[i])
+    
+#     i += 1
+    
+# np.save('sp_wp1'+str(wp1)+'_lx='+str(Lx)+'_ly='+str(Ly)+'_w1='+str(w1)+
+#         '.npy',np.vstack(temp,op1,op2,op4))    
+    
+    
+"===========================  with time  ===================================="
+    
+Lx, Ly = 32, 64
 rho = 1/2
 N = int(rho*Lx*Ly)
 sqL = Lx*Ly
-q = -1
-
+wp1 = 3
+wp = wp1/(3+wp1)
+w1 = 0.1/(3+wp1)
+    
 for k in range(sqL):
     nbr=nbr2d(k,Lx,Ly)
 nbr = nbr.astype('int16')
-print("done...")
 
-trlx = 1000000
-ens = 1000000
-temp = np.arange(0.4,0.91,0.1)
-op1 = np.zeros_like(temp)
-op2 = np.zeros_like(temp)
-op4 = np.zeros_like(temp)
+time = 100000 #2*int(1e4)    
+ens = 10
+op_ord = np.zeros(time)
+op_dis = np.zeros(time)
 
-print('q='+str(q)+',lx='+str(Lx)+',ly='+str(Ly))
-
-i = 0
-for tm in temp:
-    
-    b = 1/tm
-    # s = init_ising(N,sqL)
-    s = init_dis(N,sqL)
-    
-    for t in range(trlx):
-        # s = update_ising(s,b)
-        s = update_q(s,b,q)
+for e in tqdm(range(ens)):
+    s1 = init_dis(N,sqL)
+    s2 = init_ord(N,sqL)
+    for t in range(time):
+        op_dis[t] += ordr_param(s1)
+        op_ord[t] += ordr_param(s2)
+        s1 = update_speck(s1,wp,w1)
+        s2 = update_speck(s2,wp,w1)
         
-    for e in range(ens):
-        op = ordr_param(s)
-        op1[i] += op
-        op2[i] += op*op
-        op4[i] += op*op*op*op
-        s = update_q(s,b,q)
-        # s = update_ising(s,b)
+    np.save('sp_time_'+str(time)+'_wp1'+str(wp1)+'_lx='+str(Lx)+'_ly='+str(Ly)+
+            '_w1='+str(w1)+'.npy',np.vstack((op_ord/(e+1),op_dis/(e+1))))   
         
-    op1[i] = op1[i]/ens
-    op2[i] = op2[i]/ens
-    op4[i] = op4[i]/ens
+op_dis = op_dis/ens
+op_ord = op_ord/ens
     
-    print(tm,op1[i],op2[i],op4[i])
-    
-    i += 1
-    
-    
-np.save('q='+str(q)+'_lx='+str(Lx)+'_ly='+str(Ly)+'_T='+str(temp)+
-        '.npy',np.vstack(temp,op1,op2,op4))    
-    
+np.save('sp_time_'+str(time)+'_wp1'+str(wp1)+'_lx='+str(Lx)+'_ly='+str(Ly)+
+        '_w1='+str(w1)+'.npy',np.vstack((op_ord,op_dis)))    
+
+plt.plot(op_ord)
+plt.plot(op_dis)
+plt.ylim(0,1)
+plt.show()    
     
 print("Execution time:",datetime.now() - startTime)

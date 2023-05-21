@@ -147,7 +147,7 @@ N = int(rho*Lx*Ly)
 sqL = Lx*Ly
 temp = 0.5
 beta = 1/temp
-time = 101
+time = 20001
 q = 0.1
 
 for k in range(sqL):
@@ -189,6 +189,10 @@ plt.plot(op)
 plt.plot(opq)
 plt.ylim(0,0.5)
 plt.show()
+
+np.save('is_op__q_lx='+str(Lx)+'_ly='+str(Ly)+'_T='+str(temp)+'_time='+str(time)+
+          '.npy', np.vstack((op,opq)))
+
 
 fig = plt.figure(figsize = (15,15))
 ax1 = fig.add_subplot(1,2,1, aspect=1)
