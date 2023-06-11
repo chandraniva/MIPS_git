@@ -1,3 +1,10 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Sun Jun 11 20:57:39 2023
+
+@author: Chandraniva
+"""
+
 import numpy as np
 import matplotlib.pyplot as plt
 from numba import jit
@@ -189,11 +196,7 @@ N = int(rho*Lx*Ly)
 sqL = Lx*Ly
 temp = 0.5
 beta = 1/temp
-<<<<<<< Updated upstream
-time = 20001
-=======
 time = 10001
->>>>>>> Stashed changes
 q = 0.1
 
 for k in range(sqL):
@@ -231,61 +234,5 @@ for t in range(time):
     
 print("done...")
 
-# plt.plot(op)
-# plt.plot(opq)
-# plt.ylim(0,0.5)
-# plt.show()
-
-<<<<<<< Updated upstream
-np.save('is_op__q_lx='+str(Lx)+'_ly='+str(Ly)+'_T='+str(temp)+'_time='+str(time)+
-          '.npy', np.vstack((op,opq)))
-
-
-fig = plt.figure(figsize = (15,15))
-ax1 = fig.add_subplot(1,2,1, aspect=1)
-ax2 = fig.add_subplot(1,2,2, aspect=1)
-ax1.imshow(ssi.reshape(Ly,Lx),cmap='binary')
-ax2.imshow(ssq.reshape(Ly,Lx),cmap='binary')
-ax1.set_title("Passive Lattice gas",fontsize = 20)
-ax2.set_title("Motile lattice gas", fontsize = 20)
-time_text = ax1.text(1, 1.10, '', transform=ax1.transAxes, 
-                      fontsize=20, bbox=dict(facecolor='white', alpha=0.75))
-=======
-# fig = plt.figure(figsize = (15,15))
-# ax1 = fig.add_subplot(1,2,1, aspect=1)
-# ax2 = fig.add_subplot(1,2,2, aspect=1)
-# ax1.imshow(ssi.reshape(Ly,Lx),cmap='binary')
-# ax2.imshow(ssq.reshape(Ly,Lx),cmap='binary')
-# ax1.set_title("Passive Lattice gas",fontsize = 20)
-# ax2.set_title("Motile lattice gas", fontsize = 20)
-# time_text = ax1.text(1, 1.10, '', transform=ax1.transAxes, 
-#                       fontsize=20, bbox=dict(facecolor='white', alpha=0.75))
->>>>>>> Stashed changes
-
-# a = arri[0]
-# b = arrq[0]
-# im1 = ax1.imshow(a, cmap='binary')
-# im2 = ax2.imshow(b, cmap='binary')
-
-
-
-# def animate_func(i):
-#     if i % fps == 0:
-#         print( '.', end ='' )
-
-#     im1.set_array(arri[i])    
-#     im2.set_array(arrq[i])
-
-#     time_text.set_text(f'Time: {i:n}')
-#     return [im1, im2]
-
-# anim = animation.FuncAnimation(fig, animate_func, frames = time, #blit = True, 
-#                                 interval = 1000 / fps)
-# # plt.tight_layout()
-
-# anim.save('is_q_lx='+str(Lx)+'_ly='+str(Ly)+'_T='+str(temp)+'_time='+str(time)+
-#           '.mp4', fps=fps)
-
-# plt.show()
 
 print("Execution time:",datetime.now() - startTime)
