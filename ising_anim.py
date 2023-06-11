@@ -5,15 +5,14 @@ from datetime import datetime
 import matplotlib.animation as animation
 from matplotlib.colors import ListedColormap
 
-# Define the colors for each value
+startTime = datetime.now()
+
 red_shades = ["#FF0000", "#FF8080"]  # Two shades of red
 blue_shades = ["#0000FF", "#8080FF"]  # Two shades of blue
 
 # Create the colormap
 colors = [red_shades[0]] + [blue_shades[0]]+ [red_shades[1]] + [blue_shades[1]]
 cmap = ListedColormap(colors)
-
-startTime = datetime.now()
 
 @jit
 def nbr2d(k,Lx,Ly):    
@@ -65,7 +64,7 @@ def ordr_param(s):
         for i in range(Lx):
             n+= int(s[j*Lx + i] > 0)
         mg+=np.abs(n/Lx-0.5)
-    return mg/Ly
+    return 2*mg/Ly
 
 
 @jit
@@ -73,7 +72,7 @@ def H(s,i):
     eng = 0
     for k in range(4):
         eng += int(s[nbr[i,k]]>0) 
-    return -eng
+    return -2*eng
  
 
 @jit
@@ -181,19 +180,13 @@ def viz_circles(s,t,desc):
 
 
 
-
-
 Lx, Ly = 32, 64
 rho = 1/2
 N = int(rho*Lx*Ly)
 sqL = Lx*Ly
-temp = 0.5
+temp = 1.0
 beta = 1/temp
-<<<<<<< Updated upstream
-time = 20001
-=======
-time = 10001
->>>>>>> Stashed changes
+time = 1000001
 q = 0.1
 
 for k in range(sqL):
@@ -219,8 +212,9 @@ for t in range(time):
     # ssi[np.where(ssi>0)] = 1
     # arri.append(ssi.reshape((Ly,Lx))) 
     # arrq.append(ssq.reshape((Ly,Lx))) 
-    if t==1 or t == 10 or t == 100 or t == 1000 \
-        or t == 10000 or t == 20000 or t == 100000 or t == int(1e6):
+    if t==0 or t == 100 or t==200 or t==300 or t == 1000 \
+        or t == 10000 or t == 100000 or t == 200000 or t == 300000 or \
+            t == 400000 or t == 500000 or  t == int(1e6):
         viz_circles(si,t,"ising")
         viz_circles(sq,t,"active")
     
@@ -231,26 +225,13 @@ for t in range(time):
     
 print("done...")
 
-# plt.plot(op)
-# plt.plot(opq)
-# plt.ylim(0,0.5)
-# plt.show()
+plt.plot(op,label='passive')
+plt.plot(opq,label='active')
+plt.legend()
+plt.ylim(0,1)
+plt.xscale('log')
+plt.show()
 
-<<<<<<< Updated upstream
-np.save('is_op__q_lx='+str(Lx)+'_ly='+str(Ly)+'_T='+str(temp)+'_time='+str(time)+
-          '.npy', np.vstack((op,opq)))
-
-
-fig = plt.figure(figsize = (15,15))
-ax1 = fig.add_subplot(1,2,1, aspect=1)
-ax2 = fig.add_subplot(1,2,2, aspect=1)
-ax1.imshow(ssi.reshape(Ly,Lx),cmap='binary')
-ax2.imshow(ssq.reshape(Ly,Lx),cmap='binary')
-ax1.set_title("Passive Lattice gas",fontsize = 20)
-ax2.set_title("Motile lattice gas", fontsize = 20)
-time_text = ax1.text(1, 1.10, '', transform=ax1.transAxes, 
-                      fontsize=20, bbox=dict(facecolor='white', alpha=0.75))
-=======
 # fig = plt.figure(figsize = (15,15))
 # ax1 = fig.add_subplot(1,2,1, aspect=1)
 # ax2 = fig.add_subplot(1,2,2, aspect=1)
@@ -260,7 +241,6 @@ time_text = ax1.text(1, 1.10, '', transform=ax1.transAxes,
 # ax2.set_title("Motile lattice gas", fontsize = 20)
 # time_text = ax1.text(1, 1.10, '', transform=ax1.transAxes, 
 #                       fontsize=20, bbox=dict(facecolor='white', alpha=0.75))
->>>>>>> Stashed changes
 
 # a = arri[0]
 # b = arrq[0]
