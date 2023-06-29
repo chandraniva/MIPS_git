@@ -161,7 +161,7 @@ def viz_circles(s,t,desc):
     if desc=='active':
         scatter = ax.scatter(positions[1], positions[0], s=50, 
                              c=s[positions], cmap=cmap, edgecolor='black')
-        plt.title('HRTP: time = '+str(t))
+        # plt.title('HRTP: time = '+str(t))
         plt.tick_params(left = False, right = False , labelleft = False ,
                     labelbottom = False, bottom = False)
         plt.savefig(desc+'_lx='+str(Lx)+'_ly='+str(Ly)+'_T='+str(temp)+
@@ -171,7 +171,7 @@ def viz_circles(s,t,desc):
     else:
         scatter = ax.scatter(positions[1], positions[0], s=50, 
                              facecolor='gray', edgecolor='black')
-        plt.title('Passive: time = '+str(t))
+        # plt.title('Passive: time = '+str(t))
         plt.tick_params(left = False, right = False , labelleft = False ,
                     labelbottom = False, bottom = False)
         plt.savefig(desc+'_lx='+str(Lx)+'_ly='+str(Ly)+'_T='+str(temp)+
@@ -187,7 +187,7 @@ sqL = Lx*Ly
 temp = 1.0
 beta = 1/temp
 time = 1000001
-q = 0.1
+q = 0.01
 
 for k in range(sqL):
     nbr=nbr2d(k,Lx,Ly)
@@ -212,7 +212,7 @@ for t in range(time):
     # ssi[np.where(ssi>0)] = 1
     # arri.append(ssi.reshape((Ly,Lx))) 
     # arrq.append(ssq.reshape((Ly,Lx))) 
-    if t==0 or t == 100 or t==200 or t==300 or t == 1000 \
+    if t==0 or t==400 or t==600 or t==700 or t==800 or t == 1000 \
         or t == 10000 or t == 100000 or t == 200000 or t == 300000 or \
             t == 400000 or t == 500000 or  t == int(1e6):
         viz_circles(si,t,"ising")
