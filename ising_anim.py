@@ -4,8 +4,12 @@ from numba import jit
 from datetime import datetime
 import matplotlib.animation as animation
 from matplotlib.colors import ListedColormap
+import random
 
 startTime = datetime.now()
+
+np.random.seed(121928)
+random.seed(913281)
 
 red_shades = ["#FF0000", "#FF8080"]  # Two shades of red
 blue_shades = ["#0000FF", "#8080FF"]  # Two shades of blue
@@ -27,6 +31,14 @@ def nbr2d(k,Lx,Ly):
     return nbr 
 
 
+def roun(num):
+    count=0
+    temp = num
+    while(temp>0):
+        count+=1
+        temp=temp//10
+    return round(num/10**(count-1))*10**(count-1)
+
 
 def init_dis(N,sqL):
     k=0
@@ -34,14 +46,14 @@ def init_dis(N,sqL):
     while(k<N):
         i = int(np.random.rand()*sqL)
         if s[i] == 0:
-            s[i] = np.random.randint(1,5)
+            s[i] = random.randint(1,4)
             k+=1
     return s
 
 def init_ord(N,sqL):
     s = np.zeros(sqL,dtype=int)
     for i in range(int(sqL/4), int(3/4*sqL)):
-        s[i] = np.random.randint(1,5)
+        s[i] = random.randint(1,4)
     return s
 
 
@@ -80,7 +92,7 @@ def update_ising(s,beta):
     for r in range(sqL):
         i= int(np.random.rand()*sqL)
         if s[i]>0:
-            j = nbr[i,np.random.randint(1,5)]
+            j = nbr[i,random.randint(1,4)]
             if s[j] == 0:    
                 eng_i = H(s,i)
                 s[j] = s[i]
@@ -100,7 +112,7 @@ def update_q(s,beta,q):
         if s[i]>0:
             if np.random.rand()<0.5:
                 if np.random.rand()<q: #spin change
-                        s[i] = (np.random.randint(0,3) + s[i])%4 + 1
+                        s[i] = (random.randint(0,2) + s[i])%4 + 1
             else: #movement
                     j = nbr[i,s[i]-1]
                     if s[j] == 0:    
@@ -149,6 +161,8 @@ def viz_ising(s,t,desc):
     plt.show()
     
 
+import matplotlib as mpl
+mpl.rcParams['axes.linewidth'] = 3
 
 def viz_circles(s,t,desc):
     s = s.reshape(Ly,Lx)
@@ -161,17 +175,17 @@ def viz_circles(s,t,desc):
     if desc=='active':
         scatter = ax.scatter(positions[1], positions[0], s=50, 
                              c=s[positions], cmap=cmap, edgecolor='black')
-        # plt.title('HRTP: time = '+str(t))
+        plt.title('HRTP: time = '+str(t))
         plt.tick_params(left = False, right = False , labelleft = False ,
                     labelbottom = False, bottom = False)
-        plt.savefig(desc+'_lx='+str(Lx)+'_ly='+str(Ly)+'_T='+str(temp)+
+        plt.savefig(desc+'_w='+str(q)+'_lx='+str(Lx)+'_ly='+str(Ly)+'_T='+str(temp)+
                   '_time='+str(t)+'.png',dpi=500)
         
         
     else:
         scatter = ax.scatter(positions[1], positions[0], s=50, 
                              facecolor='gray', edgecolor='black')
-        # plt.title('Passive: time = '+str(t))
+        plt.title('Passive: time = '+str(t))
         plt.tick_params(left = False, right = False , labelleft = False ,
                     labelbottom = False, bottom = False)
         plt.savefig(desc+'_lx='+str(Lx)+'_ly='+str(Ly)+'_T='+str(temp)+
@@ -184,10 +198,10 @@ Lx, Ly = 32, 64
 rho = 1/2
 N = int(rho*Lx*Ly)
 sqL = Lx*Ly
-temp = 1.0
+temp = 0.9
 beta = 1/temp
-time = 1000001
-q = 0.01
+time = 3000001
+q = 0.001
 
 for k in range(sqL):
     nbr=nbr2d(k,Lx,Ly)
@@ -212,17 +226,21 @@ for t in range(time):
     # ssi[np.where(ssi>0)] = 1
     # arri.append(ssi.reshape((Ly,Lx))) 
     # arrq.append(ssq.reshape((Ly,Lx))) 
-    if t==0 or t==400 or t==600 or t==700 or t==800 or t == 1000 \
-        or t == 10000 or t == 100000 or t == 200000 or t == 300000 or \
-            t == 400000 or t == 500000 or  t == int(1e6):
+    if t==0 or t==600 or t==700 or t==800 or t == 1000 or t==2000 \
+        or t == 10000 or t == 200000 or \
+            t == 400000 or t==1000000 or t==2000000 or t == 3000000 :
         viz_circles(si,t,"ising")
         viz_circles(sq,t,"active")
-    
+
     op[t] = ordr_param(si)
     opq[t] = ordr_param(sq)
     si = update_ising(si,beta)
     sq = update_q(sq,beta,q)
     
+    
+    
+
+
 print("done...")
 
 plt.plot(op,label='passive')
